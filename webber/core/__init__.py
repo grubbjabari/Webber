@@ -799,6 +799,22 @@ class DAG:
                 err_msg = "Unknown visualization type requested."
                 raise NotImplementedError(err_msg)
 
+    def export(self, path: str, dpi: int = 150, optimize_layout: bool = True) -> str:
+        """
+        Export DAG visualization to a file (PNG, SVG, PDF).
+        Format is inferred from the file extension.
+
+        Args:
+            path: Output file path (e.g., 'dag.png', 'dag.svg', 'dag.pdf')
+            dpi: Resolution for raster formats (default 150)
+            optimize_layout: If True, reduces edge crossings (slower but prettier).
+
+        Returns:
+            Absolute path of the saved file.
+        """
+        import webber.viz as _viz
+        return _viz.export_graph(self.graph, path, dpi=dpi, optimize_layout=optimize_layout)
+
     @property
     def root(self) -> _T.List[str]:
         """

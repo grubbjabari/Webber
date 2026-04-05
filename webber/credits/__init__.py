@@ -1,2 +1,2 @@
-__VERSION__ = '0.2.0'
-__platforms__ = ["linux", "linux2", "win32"]
+__VERSION__ = '0.3.0'
+__platforms__ = ["linux", "linux2", "win32", "darwin"]

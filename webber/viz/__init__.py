@@ -23,7 +23,7 @@ from pyvis.network import Network as _Network
 from netgraph import InteractiveGraph as _IGraph
 from jinja2 import Environment as _Environment, FileSystemLoader as _FileSystemLoader
 
-__all__ = ["generate_pyvis_network", "visualize_plt", "visualize_browser"]
+__all__ = ["generate_pyvis_network", "visualize_plt", "visualize_browser", "export_graph"]
 
 edge_colors: _typing.Dict[Condition, str] = {
     Condition.Success: 'grey',
@@ -107,6 +107,28 @@ def annotate_node(node: _typing.Dict[str, _typing.Any]) -> str:
 
     return node_title
 
+def build_graph(graph: _nx.DiGraph, optimize_layout: bool = True) -> _IGraph:
+    """
+    Constructs a NetGraph visualization from a NetworkX DiGraph.
+    Single source of truth for graph rendering — used by both display and export.
+
+    Args:
+        graph: NetworkX DiGraph to visualize
+        optimize_layout: If True, reduces edge crossings (slower but prettier).
+                         Set to False for faster rendering on large graphs.
+    """
+    return _IGraph(
+        graph, arrows=True, node_shape='o', node_size=5,
+        node_layout='multipartite',
+        node_layout_kwargs=dict(layers=get_layers(graph), reduce_edge_crossings=optimize_layout),
+        node_labels={id: c.__name__ for id,c in graph.nodes.data(data='callable')},
+        node_color={id: node_color(c) for id,c in graph.nodes.data(data='callable')},
+        edge_color={e[:-1]: edge_color(e[-1]) for e in graph.edges.data(data='Condition')},
+        annotations={id: annotate_node(n) for id,n in graph.nodes.data(data=True)},
+        annotation_fontdict=dict(horizontalalignment='left')
+    )
+
+
 def visualize_plt(
     graph: _nx.DiGraph,
     interactive: bool = True,
@@ -130,16 +152,29 @@ def visualize_plt(
     if _in_notebook() and interactive and is_interactive_backend:
         _plt.ion()
         _plt.close()
-    return _IGraph(
-        graph, arrows=True, node_shape='o', node_size=5,
-        node_layout='multipartite',
-        node_layout_kwargs=dict(layers=get_layers(graph), reduce_edge_crossings=optimize_layout),
-        node_labels={id: c.__name__ for id,c in graph.nodes.data(data='callable')},
-        node_color={id: node_color(c) for id,c in graph.nodes.data(data='callable')},
-        edge_color={e[:-1]: edge_color(e[-1]) for e in graph.edges.data(data='Condition')},
-        annotations={id: annotate_node(n) for id,n in graph.nodes.data(data=True)},
-        annotation_fontdict=dict(horizontalalignment='left')
-    )
+    return build_graph(graph, optimize_layout)
+
+
+def export_graph(
+    graph: _nx.DiGraph,
+    path: str,
+    dpi: int = 150,
+    optimize_layout: bool = True
+) -> str:
+    """
+    Export graph visualization to a file (PNG, SVG, PDF).
+    Format is inferred from the file extension.
+
+    Args:
+        graph: NetworkX DiGraph to export
+        path: Output file path (e.g., 'dag.png', 'dag.svg', 'dag.pdf')
+        dpi: Resolution for raster formats (default 150)
+        optimize_layout: If True, reduces edge crossings (slower but prettier).
+    """
+    build_graph(graph, optimize_layout)
+    _plt.savefig(path, dpi=dpi, bbox_inches='tight')
+    _plt.close()
+    return _path.abspath(path)
 
 def generate_pyvis_network(graph: _nx.DiGraph) -> _Network:
     """
