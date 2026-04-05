@@ -815,6 +815,20 @@ class DAG:
         import webber.viz as _viz
         return _viz.export_graph(self.graph, path, dpi=dpi, optimize_layout=optimize_layout)
 
+    def export_html(self, path: str, open_browser: bool = False) -> str:
+        """
+        Export the interactive Vis.js dashboard as a standalone HTML file.
+
+        Args:
+            path: Output file path (e.g., 'dag.html')
+            open_browser: If True, opens the exported file in the default browser.
+
+        Returns:
+            Absolute path of the saved file.
+        """
+        import webber.viz as _viz
+        return _viz.export_html(self.graph, path, open_browser=open_browser)
+
     @property
     def root(self) -> _T.List[str]:
         """

@@ -23,7 +23,7 @@ from pyvis.network import Network as _Network
 from netgraph import InteractiveGraph as _IGraph
 from jinja2 import Environment as _Environment, FileSystemLoader as _FileSystemLoader
 
-__all__ = ["generate_pyvis_network", "visualize_plt", "visualize_browser", "export_graph"]
+__all__ = ["generate_pyvis_network", "visualize_plt", "visualize_browser", "export_graph", "export_html"]
 
 edge_colors: _typing.Dict[Condition, str] = {
     Condition.Success: 'grey',
@@ -175,6 +175,36 @@ def export_graph(
     _plt.savefig(path, dpi=dpi, bbox_inches='tight')
     _plt.close()
     return _path.abspath(path)
+
+def export_html(
+    graph: _nx.DiGraph,
+    path: str,
+    open_browser: bool = False
+) -> str:
+    """
+    Export the interactive Vis.js dashboard as a standalone HTML file.
+
+    Args:
+        graph: NetworkX DiGraph to export
+        path: Output file path (e.g., 'dag.html')
+        open_browser: If True, opens the exported file in the default browser.
+
+    Returns:
+        Absolute path of the saved file.
+    """
+    import webbrowser as _webbrowser
+
+    html = generate_vis_html(graph)
+    with open(path, 'w') as f:
+        f.write(html)
+
+    abs_path = _path.abspath(path)
+
+    if open_browser:
+        _webbrowser.open(f'file://{abs_path}')
+
+    return abs_path
+
 
 def generate_pyvis_network(graph: _nx.DiGraph) -> _Network:
     """
