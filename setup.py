@@ -12,5 +12,8 @@ setup(
     url='https://www.webberproject.com',
     package_dir={'webber': 'webber'},
     package_data={'webber': ['viz/templates/*.html']},
+    extras_require={
+        'gui': ['pywebview>=4.0'],
+    },
     classifiers=['Development Status :: 4 - Beta'],
 )

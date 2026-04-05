@@ -786,8 +786,7 @@ class DAG:
                 return _viz.visualize_plt(self.graph)
 
             case 'gui':
-                # _visualize_gui(self.graph)
-                raise NotImplementedError
+                _viz.visualize_gui(self.graph)
 
             case None: 
                 if _viz._in_notebook():

@@ -348,6 +348,32 @@ def visualize_browser(graph: _nx.DiGraph):
 
     print('\nVisualization closed.')
 
+
+def visualize_gui(graph: _nx.DiGraph, title: str = "Webber DAG Visualization"):
+    """
+    Visualizes Network graphs in a native desktop window using pywebview.
+    Falls back to browser visualization if pywebview is not installed.
+
+    Args:
+        graph: NetworkX DiGraph to visualize
+        title: Window title (default 'Webber DAG Visualization')
+    """
+    import logging as _logging
+
+    try:
+        import webview
+    except ImportError:
+        _logging.warning(
+            "pywebview not installed, falling back to browser visualization. "
+            "Install with: pip install webber[gui]"
+        )
+        return visualize_browser(graph)
+
+    html = generate_vis_html(graph)
+    webview.create_window(title, html=html, width=1200, height=800)
+    webview.start()
+
+
 def _in_notebook() -> bool:
     """
     Internal only. Helper to default to interactive notebooks when available
